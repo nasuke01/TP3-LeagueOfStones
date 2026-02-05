@@ -2,7 +2,7 @@
 const nextConfig = {
   output: 'export', 
   
-  basePath: '/~el-hadji-massina.d/out', 
+  basePath: '/~el-hadji-massina.dia/out', 
   
   images: {
     unoptimized: true, // pour voir les images
