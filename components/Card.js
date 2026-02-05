@@ -1,60 +1,79 @@
 import { useState } from 'react';
 
-export default function Card({ card, onClick }) {
-  // J'utilise ces variables pour gérer l'affichage (image cassée et survol souris)
+export default function Card({ card, onClick, isDeckCard, isFinalView }) {
+  // --- MES VARIABLES D'ETAT ---
+  // Pour gérer si l'image ne charge pas et l'animation de la souris
   const [imageError, setImageError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  // L'adresse de l'image chez Riot
+  // L'URL officielle de l'image chez Riot Games
   const imageUrl = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${card.key}_0.jpg`;
 
-  // Le style de la carte (avec l'animation de relief au survol)
+  // --- STYLE PERSONNALISE ---
+  // Si c'est le deck final, je force la bordure en OR, sinon ça dépend
+  const borderColor = (isDeckCard || isFinalView) ? '#FFD700' : '#0dcaf0'; 
+
   const cardStyle = {
-    cursor: 'pointer',
-    transition: 'all 0.3s ease', // Pour que l'animation soit fluide
-    transform: isHovered ? 'translateY(-10px)' : 'translateY(0)', // La carte monte un peu
+    cursor: onClick ? 'pointer' : 'default', // Pas de curseur main si on ne peut plus cliquer (vue finale)
+    transition: 'all 0.2s ease-out',
+    transform: isHovered && onClick ? 'translateY(-5px)' : 'translateY(0)', // Animation seulement si cliquable
     boxShadow: isHovered 
-      ? '0 15px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(255, 215, 0, 0.3)' // Grosse ombre si souris dessus
-      : '0 4px 8px rgba(0, 0, 0, 0.5)', // Ombre normale
-    border: isHovered ? '1px solid #FFD700' : '1px solid #555'
+      ? `0 0 15px ${borderColor}` // Effet lumineux au survol
+      : '0 4px 6px rgba(0,0,0,0.5)',
+    border: `1px solid ${isHovered || isFinalView ? borderColor : '#444'}`, 
+    backgroundColor: '#1e2124',
+    height: '100%' 
   };
 
   return (
-    <div className="col-md-3 col-6 mb-4">
+    // J'adapte la largeur selon si on est dans la vue finale ou pas
+    <div className={isFinalView ? "col-6 col-md-4 col-lg-3 mb-4" : "col-6 col-md-6 col-lg-4 mb-3"}>
       <div 
-        className="card bg-black text-white h-100" 
+        className="card text-white overflow-hidden h-100" 
         style={cardStyle} 
-        onClick={() => onClick(card)}
-        onMouseEnter={() => setIsHovered(true)} // Quand la souris entre
-        onMouseLeave={() => setIsHovered(false)} // Quand la souris sort
+        // Si onClick existe (mode construction), je l'active. Sinon (mode final), rien ne se passe.
+        onClick={() => onClick && onClick(card)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
         
-        {/* Gestion de l'image : si elle bug (réseau fac), je mets un carré gris */}
-        {!imageError ? (
-          <img 
-            src={imageUrl} 
-            className="card-img-top" 
-            alt={card.name}
-            style={{ height: '150px', objectFit: 'cover', borderBottom: '1px solid #333' }}
-            onError={() => setImageError(true)} // Si l'image charge pas, on change l'état
-          />
-        ) : (
-          // Affichage de secours (carré gris avec la 1ère lettre)
-          <div 
-            className="card-img-top d-flex align-items-center justify-content-center bg-secondary" 
-            style={{ height: '150px', borderBottom: '1px solid #333' }}
-          >
-            <span className="h1 fw-bold text-white-50">{card.name.charAt(0)}</span>
-          </div>
-        )}
-
-        <div className="card-body p-2 text-center">
-          <h5 className="card-title fs-6 fw-bold text-uppercase mb-2">{card.name}</h5>
+        {/* --- IMAGE DU CHAMPION --- */}
+        <div style={{ position: 'relative', height: '120px' }}> 
+          {!imageError ? (
+            <img 
+              src={imageUrl} 
+              className="w-100 h-100" 
+              alt={card.name}
+              style={{ objectFit: 'cover' }}
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            // Mon bloc de secours 
+            <div className="w-100 h-100 d-flex align-items-center justify-content-center bg-secondary">
+              <span className="h1 fw-bold text-white-50">{card.name.charAt(0)}</span>
+            </div>
+          )}
           
-          {/* Les stats Attaque / Défense */}
-          <div className="d-flex justify-content-between px-3 pb-2 small">
-            <span className="text-danger fw-bold">⚔️ {card.info.attack}</span>
-            <span className="text-success fw-bold">🛡️ {card.info.defense}</span>
+          {/* Nom du champion en superposition */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)',
+            padding: '4px'
+          }}>
+            <h6 className="m-0 text-center fw-bold text-uppercase small text-truncate">
+              {card.name}
+            </h6>
+          </div>
+        </div>
+
+        {/* --- ATTRIBUTS / STATS  --- */}
+        <div className="card-body p-1">
+          {/* J'ai mis fontSize à 0.7rem pour que "Difficulté" tienne bien sur une ligne */}
+          <div className="row g-0 text-center" style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>
+            <div className="col-6 text-danger">Attaque : {card.info.attack}</div>
+            <div className="col-6 text-success">Défense : {card.info.defense}</div>
+            <div className="col-6 text-info">Magie : {card.info.magic}</div>
+            <div className="col-6 text-warning">Difficulté : {card.info.difficulty}</div>
           </div>
         </div>
 
