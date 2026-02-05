@@ -9,12 +9,13 @@ export default function Home() {
   // Cet état me sert à savoir si on a fini de choisir
   const [isDeckValidated, setIsDeckValidated] = useState(false);
 
-  // Je récupère les champions depuis mon API locale au démarrage
+  // Je récupère les champions depuis mon fichier local (et plus depuis localhost c'est pour permettre l'affichage des cartes apres deploiement dans phpmut)
   useEffect(() => {
-    fetch('http://localhost:3001/cards')
+    // j'utilise le chemin relatif qui fonctionnera aussi bien en local que sur le serveur
+    fetch('champions.json') 
       .then((res) => res.json())
       .then((data) => setAvailableCards(data))
-      .catch((err) => console.error("Erreur de connexion API:", err));
+      .catch((err) => console.error("Erreur de chargement des données :", err));
   }, []);
 
   // --- MES FONCTIONS DE GESTION ---
